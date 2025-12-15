@@ -224,6 +224,9 @@ pub enum AddressError {
     /// The Network embedded within the Address.
     actual: Network,
   },
+  /// The address was a subaddress, which the function does not accept.
+  #[error("subaddresses are not accepted")]
+  NoSubaddress,
 }
 
 /// Bytes used as prefixes when encoding addresses, variable to the network instance.
@@ -474,6 +477,18 @@ impl<const ADDRESS_BYTES: u128> Address<ADDRESS_BYTES> {
         Err(AddressError::DifferentNetwork { actual: addr.network, expected: network })?
       }
     })
+  }
+
+  /// Create an integrated address from this address and a `payment_id`
+  ///
+  /// If a subaddress is provided, then the function will automatically give an error, since payment
+  /// IDs aren't supported with subaddresses.
+  pub fn to_integrated(&self, payment_id: [u8; 8]) -> Result<Self, AddressError> {
+    if self.is_subaddress() {
+      Err(AddressError::NoSubaddress)
+    } else {
+      Ok(Self::new(self.network, AddressType::LegacyIntegrated(payment_id), self.spend, self.view))
+    }
   }
 
   /// The network this address is intended for use on.
