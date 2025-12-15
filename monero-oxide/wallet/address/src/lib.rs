@@ -479,7 +479,8 @@ impl<const ADDRESS_BYTES: u128> Address<ADDRESS_BYTES> {
     })
   }
 
-  /// Create an integrated address from this address and a `payment_id`
+  /// Create an integrated address from this address and a `payment_id`, or edit an existing
+  /// integrated address with a new `payment_id`
   ///
   /// If a subaddress is provided, then the function will automatically give an error, since payment
   /// IDs aren't supported with subaddresses.
