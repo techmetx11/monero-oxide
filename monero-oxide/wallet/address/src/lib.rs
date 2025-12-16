@@ -224,9 +224,9 @@ pub enum AddressError {
     /// The Network embedded within the Address.
     actual: Network,
   },
-  /// The address was a subaddress, which the function does not accept.
-  #[error("subaddresses are not accepted")]
-  NoSubaddress,
+  /// The address's type does not support integrated payment IDs
+  #[error("address's type does not support integrated payment ID")]
+  UnsupportedPaymentID,
 }
 
 /// Bytes used as prefixes when encoding addresses, variable to the network instance.
@@ -482,13 +482,23 @@ impl<const ADDRESS_BYTES: u128> Address<ADDRESS_BYTES> {
   /// Create an integrated address from this address and a `payment_id`, or edit an existing
   /// integrated address with a new `payment_id`
   ///
-  /// If a subaddress is provided, then the function will automatically give an error, since payment
-  /// IDs aren't supported with subaddresses.
+  /// If the address does not support payment IDs within its format (e.g. subaddresses), then this
+  /// function will return an error.
   pub fn to_integrated(&self, payment_id: [u8; 8]) -> Result<Self, AddressError> {
-    if self.is_subaddress() {
-      Err(AddressError::NoSubaddress)
-    } else {
-      Ok(Self::new(self.network, AddressType::LegacyIntegrated(payment_id), self.spend, self.view))
+    match self.kind {
+      AddressType::Subaddress => Err(AddressError::UnsupportedPaymentID),
+      AddressType::Featured { subaddress, guaranteed, .. } => Ok(Self::new(
+        self.network,
+        AddressType::Featured { subaddress, payment_id: Some(payment_id), guaranteed },
+        self.spend,
+        self.view,
+      )),
+      _ => Ok(Self::new(
+        self.network,
+        AddressType::LegacyIntegrated(payment_id),
+        self.spend,
+        self.view,
+      )),
     }
   }
 
