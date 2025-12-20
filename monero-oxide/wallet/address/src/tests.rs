@@ -63,7 +63,7 @@ fn convert_to_integrated_address() {
   assert_eq!(addr.view.compress().to_bytes(), VIEW);
   assert_eq!(addr.to_string(), STANDARD);
 
-  let integrated_addr = addr.to_integrated(PAYMENT_ID).unwrap();
+  let integrated_addr = addr.with_payment_id(PAYMENT_ID).unwrap();
   assert_eq!(integrated_addr.to_string(), INTEGRATED);
   assert_eq!(integrated_addr.payment_id(), Some(PAYMENT_ID));
 }

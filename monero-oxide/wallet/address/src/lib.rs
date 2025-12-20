@@ -484,7 +484,7 @@ impl<const ADDRESS_BYTES: u128> Address<ADDRESS_BYTES> {
   ///
   /// If the address does not support payment IDs within its format (e.g. subaddresses), then this
   /// function will return an error.
-  pub fn to_integrated(&self, payment_id: [u8; 8]) -> Result<Self, AddressError> {
+  pub fn with_payment_id(&self, payment_id: [u8; 8]) -> Result<Self, AddressError> {
     match self.kind {
       AddressType::Subaddress => Err(AddressError::UnsupportedPaymentID),
       AddressType::Featured { subaddress, guaranteed, .. } => Ok(Self::new(
